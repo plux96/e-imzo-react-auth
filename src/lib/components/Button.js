@@ -10,7 +10,7 @@ const Button = (props) => {
       name={props.name}
       value={props.value}
       disabled={props.disabled}
-      onClick={props.handleClick}
+      onClick={props.onClick}
     >
       <h4>{props.label}</h4>
     </button>

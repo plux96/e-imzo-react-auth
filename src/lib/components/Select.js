@@ -6,8 +6,8 @@ export default function Select({ data }) {
     <div>
       <select>
         {data &&
-          data.map((item) => {
-            return <option value="#">{item.CN}</option>;
+          data.map((item, key) => {
+            return <option value="#" key={key}>{item.CN}</option>;
           })}
       </select>
     </div>
