@@ -6,12 +6,12 @@ import classes from "./Modal.module.css";
 import Select from "./Select";
 import axios from "axios";
 
-
 export default function Modal() {
   const [certificates, setCertificates] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const [keyId, setKeyId] = useState(null);
-  const [pkcsInfo, setPkcsInfo] = useState("")
+  const [pkcsInfo, setPkcsInfo] = useState("");
+  const [resultPkcs, setResultPkcs] = useState({});
   const EIMZOClient = new EIMZO();
 
   useEffect(() => {
@@ -20,23 +20,27 @@ export default function Modal() {
       const data = await EIMZOClient.listAllUserKeys();
       setCertificates(data);
     };
-   listAllKeys();
+    listAllKeys();
   }, []);
 
- const reqGuid = async () => {
-    const backendGuid =await axios.get(`http://localhost:8080/?key=${keyId}`)
-    return backendGuid
- }
+  const reqGuid = async () => {
+    const backendGuid = await axios.get(
+      `http://localhost:8080/?key=${keyId.id}`
+    );
+    console.log(backendGuid, "sdvdvdvd------vedvdv-");
+    return backendGuid;
+  };
   const getData = () => {
     const getKeyData = async () => {
       const keyData = await EIMZOClient.loadKey(certificates[0]);
-      setKeyId(keyData.id);
       console.log(keyData);
+      setKeyId(keyData);
+      console.log(keyData);
+    };
+    if (certificates) {
+      getKeyData();
     }
-    if(certificates){
-      getKeyData()
-    }
-  }
+  };
 
   const toggleModal = () => {
     setIsOpen(!isOpen);
@@ -45,28 +49,32 @@ export default function Modal() {
   useEffect(() => {
     const getDateFromBackend = async () => {
       const guid1 = await reqGuid();
-      console.log(guid1)
-      const pkcs = await EIMZOClient.createPkcs7(keyId, guid1.data.guid);
-      console.log(pkcs)
-      setPkcsInfo(pkcs)
+      const pkcs = await EIMZOClient.createPkcs7(keyId.id, guid1.data.guid);
+      console.log(pkcs);
+      setPkcsInfo(pkcs);
+    };
+    if (keyId) {
+      getDateFromBackend();
     }
-    if(keyId){
-      getDateFromBackend()
-    }
-   
-  },[keyId])
+  }, [keyId]);
 
-  useEffect(()=> {
+  useEffect(() => {
     const verifyPkcs = async () => {
       const info = await axios.post("http://localhost:8080/pkcs7", {
-        pkcs: pkcsInfo
+        pkcs: pkcsInfo,
+        infoCert: keyId,
       });
-      console.log(info)
+      console.log(info);
+      setResultPkcs(info);
+    };
+    if (pkcsInfo) {
+      verifyPkcs();
     }
-    if(pkcsInfo){
-      verifyPkcs()
-    }
-  }, [pkcsInfo])
+  }, [pkcsInfo]);
+
+  useEffect(() => {
+    console.log(resultPkcs);
+  }, [resultPkcs]);
 
   return (
     <>
